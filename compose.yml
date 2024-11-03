@@ -1,0 +1,80 @@
+services:
+  registry:
+    image: gc
+    build: ./
+    pull_policy: never
+    ports:
+      - 8800:8800
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "GET", "http://0.0.0.0:8800/health"]
+      timeout: 1s
+      retries: 5
+      start_period: 1s
+      start_interval: 1s
+    command: uvicorn 'registry.main:app' --host '0.0.0.0' --port 8800
+  
+  collector1:
+    image: gc
+    pull_policy: never
+    depends_on:
+      registry:
+        condition: service_healthy
+        restart: true
+    ports:
+      - 8801:8801
+    environment:
+      - COLLECTOR_DB_URI=sqlite:///sqlite.db
+      - COLLECTOR_SELF_URL=http://collector1:8801
+      - COLLECTOR_REGISTRY_URL=http://registry:8800
+      - COLLECTOR_POSITION_X=0
+      - COLLECTOR_POSITION_Y=0
+    command: uvicorn 'collector.main:app' --host '0.0.0.0' --port 8801
+
+  collector2:
+    image: gc
+    pull_policy: never
+    depends_on:
+      registry:
+        condition: service_healthy
+        restart: true
+    ports:
+      - 8802:8802
+    environment:
+      - COLLECTOR_DB_URI=sqlite:///sqlite.db
+      - COLLECTOR_SELF_URL=http://collector2:8802
+      - COLLECTOR_REGISTRY_URL=http://registry:8800
+      - COLLECTOR_POSITION_X=5
+      - COLLECTOR_POSITION_Y=4
+    command: uvicorn 'collector.main:app' --host '0.0.0.0' --port 8802
+
+  collector3:
+    image: gc
+    pull_policy: never
+    depends_on:
+      registry:
+        condition: service_healthy
+        restart: true
+    ports:
+      - 8803:8803
+    environment:
+      - COLLECTOR_DB_URI=sqlite:///sqlite.db
+      - COLLECTOR_SELF_URL=http://collector3:8803
+      - COLLECTOR_REGISTRY_URL=http://registry:8800
+      - COLLECTOR_POSITION_X=-4
+      - COLLECTOR_POSITION_Y=-5
+    command: uvicorn 'collector.main:app' --host '0.0.0.0' --port 8803
+
+  producer:
+    image: gc
+    pull_policy: never
+    depends_on:
+      registry:
+        condition: service_healthy
+        restart: true
+    ports:
+      - 8880:8880
+    environment:
+      - PRODUCER_REGISTRY_URL=http://registry:8800
+      - PRODUCER_POSITION_X=-4
+      - PRODUCER_POSITION_Y=-5
+    command: uvicorn 'producer.main:app' --host '0.0.0.0' --port 8880

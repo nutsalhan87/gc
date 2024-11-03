@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "garbage-collector"
+version = "0.1.0"
+description = ""
+authors = ["nutsalhan87 <nutsalhan87@yandex.ru>"]
+readme = "README.md"
+packages = [
+    { include = "common", from = "src" },
+    { include = "registry", from = "src" },
+    { include = "collector", from = "src" },
+    { include = "producer", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.115.3"}
+sqlmodel = "^0.0.22"
+pydantic-settings = "^2.6.0"
+aiorwlock = "^1.4.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.3"
+docker = "^7.1.0"
+types-docker = "^7.1.0.20240827"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
